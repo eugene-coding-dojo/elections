@@ -33,8 +33,7 @@ public class Elections {
     public void voteFor(String elector, String candidate, String electorDistrict) {
         if (!withDistrict) {
             if (candidates.contains(candidate)) {
-                int index = candidates.indexOf(candidate);
-                votesWithoutDistricts.set(index, votesWithoutDistricts.get(index) + 1);
+                incrementCandidateVotesCounter(candidate, candidates, votesWithoutDistricts);
             } else {
                 candidates.add(candidate);
                 votesWithoutDistricts.add(1);
@@ -43,8 +42,7 @@ public class Elections {
             if (votesWithDistricts.containsKey(electorDistrict)) {
                 ArrayList<Integer> districtVotes = votesWithDistricts.get(electorDistrict);
                 if (candidates.contains(candidate)) {
-                    int index = candidates.indexOf(candidate);
-                    districtVotes.set(index, districtVotes.get(index) + 1);
+                    incrementCandidateVotesCounter(candidate, candidates, districtVotes);
                 } else {
                     candidates.add(candidate);
                     votesWithDistricts.forEach((district, votes) -> {
@@ -54,6 +52,11 @@ public class Elections {
                 }
             }
         }
+    }
+
+    private void incrementCandidateVotesCounter(String candidate, List<String> candidates, ArrayList<Integer> votesByCandidate) {
+        int index = candidates.indexOf(candidate);
+        votesByCandidate.set(index, votesByCandidate.get(index) + 1);
     }
 
     public Map<String, String> results() {
