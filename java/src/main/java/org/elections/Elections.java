@@ -38,18 +38,17 @@ public class Elections {
 
     public void voteFor(String elector, String candidate, String electorDistrict) {
         if (!withDistrict) {
-            if (!candidates.contains(candidate)) {
-                addUnofficialCandidate(candidate, votesWithoutDistrict);
-            }
-            incrementCandidateVotesCounter(candidate, candidates, votesWithoutDistrict.get(NO_DISTRICT));
-        } else {
-            if (votesWithDistricts.containsKey(electorDistrict)) {
-                if (!candidates.contains(candidate)) {
-                    addUnofficialCandidate(candidate, votesWithDistricts);
-                }
-                incrementCandidateVotesCounter(candidate, candidates, votesWithDistricts.get(electorDistrict));
-            }
+            countVote(candidate, votesWithoutDistrict, NO_DISTRICT);
+        } else if (votesWithDistricts.containsKey(electorDistrict)) {
+            countVote(candidate, votesWithDistricts, electorDistrict);
         }
+    }
+
+    private void countVote(String candidate, Map<String, ArrayList<Integer>> votesMap, String districtName) {
+        if (!candidates.contains(candidate)) {
+            addUnofficialCandidate(candidate, votesMap);
+        }
+        incrementCandidateVotesCounter(candidate, candidates, votesMap.get(districtName));
     }
 
     private void addUnofficialCandidate(String candidate, Map<String, ArrayList<Integer>> votesMap) {
