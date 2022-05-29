@@ -32,23 +32,19 @@ public class Elections {
 
     public void voteFor(String elector, String candidate, String electorDistrict) {
         if (!withDistrict) {
-            if (candidates.contains(candidate)) {
-                incrementCandidateVotesCounter(candidate, candidates, votesWithoutDistricts);
-            } else {
+            if (!candidates.contains(candidate)) {
                 candidates.add(candidate);
                 votesWithoutDistricts.add(0);
-                incrementCandidateVotesCounter(candidate, candidates, votesWithoutDistricts);
             }
+            incrementCandidateVotesCounter(candidate, candidates, votesWithoutDistricts);
         } else {
             if (votesWithDistricts.containsKey(electorDistrict)) {
                 ArrayList<Integer> districtVotes = votesWithDistricts.get(electorDistrict);
-                if (candidates.contains(candidate)) {
-                    incrementCandidateVotesCounter(candidate, candidates, districtVotes);
-                } else {
+                if (!candidates.contains(candidate)) {
                     candidates.add(candidate);
                     votesWithDistricts.forEach((district, votes) -> votes.add(0));
-                    incrementCandidateVotesCounter(candidate, candidates, districtVotes);
                 }
+                incrementCandidateVotesCounter(candidate, candidates, districtVotes);
             }
         }
     }
