@@ -95,9 +95,9 @@ class ElectionsTest {
         @DisplayName("Approval-Test для подсчета голосов")
         void electionWithoutDistricts() {
             Elections elections = new Elections(electorsByDistrict, false);
-            elections.addCandidate("Michel");
-            elections.addCandidate("Jerry");
-            elections.addCandidate("Johnny");
+            elections.addOfficialCandidate("Michel");
+            elections.addOfficialCandidate("Jerry");
+            elections.addOfficialCandidate("Johnny");
 
             elections.voteFor("Bob", "Jerry", "District 1");
             elections.voteFor("Jerry", "Jerry", "District 2");
@@ -136,9 +136,9 @@ class ElectionsTest {
     @Test
     void electionWithDistricts() {
         Elections elections = new Elections(electorsByDistrict, true);
-        elections.addCandidate("Michel");
-        elections.addCandidate("Jerry");
-        elections.addCandidate("Johnny");
+        elections.addOfficialCandidate("Michel");
+        elections.addOfficialCandidate("Jerry");
+        elections.addOfficialCandidate("Johnny");
 
         elections.voteFor("Bob", "Jerry", "District 1");
         elections.voteFor("Jerry", "Jerry", "District 2");

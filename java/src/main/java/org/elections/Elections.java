@@ -25,7 +25,7 @@ public class Elections {
         votesWithDistricts.put("District 3", new ArrayList<>());
     }
 
-    public void addCandidate(String candidate) {
+    public void addOfficialCandidate(String candidate) {
         officialCandidates.add(candidate);
         candidates.add(candidate);
 
@@ -39,19 +39,22 @@ public class Elections {
     public void voteFor(String elector, String candidate, String electorDistrict) {
         if (!withDistrict) {
             if (!candidates.contains(candidate)) {
-                candidates.add(candidate);
-                votesWithoutDistrict.forEach((district, votes) -> votes.add(0));
+                addUnofficialCandidate(candidate, votesWithoutDistrict);
             }
             incrementCandidateVotesCounter(candidate, candidates, votesWithoutDistrict.get(NO_DISTRICT));
         } else {
             if (votesWithDistricts.containsKey(electorDistrict)) {
                 if (!candidates.contains(candidate)) {
-                    candidates.add(candidate);
-                    votesWithDistricts.forEach((district, votes) -> votes.add(0));
+                    addUnofficialCandidate(candidate, votesWithDistricts);
                 }
                 incrementCandidateVotesCounter(candidate, candidates, votesWithDistricts.get(electorDistrict));
             }
         }
+    }
+
+    private void addUnofficialCandidate(String candidate, Map<String, ArrayList<Integer>> votesMap) {
+        candidates.add(candidate);
+        votesMap.forEach((district, votes) -> votes.add(0));
     }
 
     private void incrementCandidateVotesCounter(String candidate, List<String> candidates, ArrayList<Integer> votesByCandidate) {
