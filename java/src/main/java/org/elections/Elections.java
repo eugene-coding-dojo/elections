@@ -4,9 +4,10 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 public class Elections {
+    private static final String NO_DISTRICT = "No district";
     List<String> candidates = new ArrayList<>();
     List<String> officialCandidates = new ArrayList<>();
-    ArrayList<Integer> votesWithoutDistricts = new ArrayList<>();
+    Map<String, ArrayList<Integer>> votesWithoutDistrict;
     Map<String, ArrayList<Integer>> votesWithDistricts;
     private Map<String, List<String>> list;
     private boolean withDistrict;
@@ -14,6 +15,9 @@ public class Elections {
     public Elections(Map<String, List<String>> list, boolean withDistrict) {
         this.list = list;
         this.withDistrict = withDistrict;
+
+        votesWithoutDistrict = new HashMap<>();
+        votesWithoutDistrict.put(NO_DISTRICT, new ArrayList<>());
 
         votesWithDistricts = new HashMap<>();
         votesWithDistricts.put("District 1", new ArrayList<>());
@@ -24,7 +28,9 @@ public class Elections {
     public void addCandidate(String candidate) {
         officialCandidates.add(candidate);
         candidates.add(candidate);
-        votesWithoutDistricts.add(0);
+
+        votesWithoutDistrict.get(NO_DISTRICT).add(0);
+
         votesWithDistricts.get("District 1").add(0);
         votesWithDistricts.get("District 2").add(0);
         votesWithDistricts.get("District 3").add(0);
@@ -34,17 +40,16 @@ public class Elections {
         if (!withDistrict) {
             if (!candidates.contains(candidate)) {
                 candidates.add(candidate);
-                votesWithoutDistricts.add(0);
+                votesWithoutDistrict.forEach((district, votes) -> votes.add(0));
             }
-            incrementCandidateVotesCounter(candidate, candidates, votesWithoutDistricts);
+            incrementCandidateVotesCounter(candidate, candidates, votesWithoutDistrict.get(NO_DISTRICT));
         } else {
             if (votesWithDistricts.containsKey(electorDistrict)) {
-                ArrayList<Integer> districtVotes = votesWithDistricts.get(electorDistrict);
                 if (!candidates.contains(candidate)) {
                     candidates.add(candidate);
                     votesWithDistricts.forEach((district, votes) -> votes.add(0));
                 }
-                incrementCandidateVotesCounter(candidate, candidates, districtVotes);
+                incrementCandidateVotesCounter(candidate, candidates, votesWithDistricts.get(electorDistrict));
             }
         }
     }
@@ -62,22 +67,23 @@ public class Elections {
         int nbValidVotes = 0;
 
         if (!withDistrict) {
-            nbVotes = votesWithoutDistricts.stream().reduce(0, Integer::sum);
+            final ArrayList<Integer> votesForNoDistrict = votesWithoutDistrict.get(NO_DISTRICT);
+            nbVotes = votesForNoDistrict.stream().reduce(0, Integer::sum);
             for (int i = 0; i < officialCandidates.size(); i++) {
                 int index = candidates.indexOf(officialCandidates.get(i));
-                nbValidVotes += votesWithoutDistricts.get(index);
+                nbValidVotes += votesForNoDistrict.get(index);
             }
 
-            for (int i = 0; i < votesWithoutDistricts.size(); i++) {
-                Float candidatResult = ((float)votesWithoutDistricts.get(i) * 100) / nbValidVotes;
+            for (int i = 0; i < votesForNoDistrict.size(); i++) {
+                Float candidatResult = ((float) votesForNoDistrict.get(i) * 100) / nbValidVotes;
                 String candidate = candidates.get(i);
                 if (officialCandidates.contains(candidate)) {
                     results.put(candidate, String.format(Locale.FRENCH, "%.2f%%", candidatResult));
                 } else {
                     if (candidates.get(i).isEmpty()) {
-                        blankVotes += votesWithoutDistricts.get(i);
+                        blankVotes += votesForNoDistrict.get(i);
                     } else {
-                        nullVotes += votesWithoutDistricts.get(i);
+                        nullVotes += votesForNoDistrict.get(i);
                     }
                 }
             }
