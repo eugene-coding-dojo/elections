@@ -36,7 +36,8 @@ public class Elections {
                 incrementCandidateVotesCounter(candidate, candidates, votesWithoutDistricts);
             } else {
                 candidates.add(candidate);
-                votesWithoutDistricts.add(1);
+                votesWithoutDistricts.add(0);
+                incrementCandidateVotesCounter(candidate, candidates, votesWithoutDistricts);
             }
         } else {
             if (votesWithDistricts.containsKey(electorDistrict)) {
@@ -45,10 +46,8 @@ public class Elections {
                     incrementCandidateVotesCounter(candidate, candidates, districtVotes);
                 } else {
                     candidates.add(candidate);
-                    votesWithDistricts.forEach((district, votes) -> {
-                        votes.add(0);
-                    });
-                    districtVotes.set(candidates.size() - 1, districtVotes.get(candidates.size() - 1) + 1);
+                    votesWithDistricts.forEach((district, votes) -> votes.add(0));
+                    incrementCandidateVotesCounter(candidate, candidates, districtVotes);
                 }
             }
         }
