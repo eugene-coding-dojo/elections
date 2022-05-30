@@ -67,42 +67,26 @@ public class Elections {
         Fraction nullVotes = Fraction.withDenominator(nbVotes);
         Fraction blankVotes = Fraction.withDenominator(nbVotes);
 
+        Map<String, Integer> officialCandidatesResult = new HashMap<>();
+        for (int i = 0; i < officialCandidates.size(); i++) {
+            officialCandidatesResult.put(candidates.get(i), 0);
+        }
         if (!withDistrict) {
-            final ArrayList<Integer> votesForNoDistrict = votesWithoutDistrict.get(NO_DISTRICT);
-            for (int i = 0; i < votesForNoDistrict.size(); i++) {
-                String candidate = candidates.get(i);
-                if (officialCandidates.contains(candidate)) {
-                    Fraction candidateResult = Fraction.withNumeratorDenominator(votesForNoDistrict.get(i), nbValidVotes);
-                    results.put(candidate, String.format(Locale.FRENCH, "%.2f%%", candidateResult.asPercent()));
-                } else {
-                    if (candidates.get(i).isEmpty()) {
-                        blankVotes.addToNumerator(votesForNoDistrict.get(i));
-                    } else {
-                        nullVotes.addToNumerator(votesForNoDistrict.get(i));
-                    }
+            for (Map.Entry<String, ArrayList<Integer>> entry : votesWithoutDistrict.entrySet()) {
+                ArrayList<Integer> districtResult = fillVoteBuckets(nullVotes, blankVotes, entry);
+
+                for (int i = 0; i < officialCandidates.size(); i++) {
+                    officialCandidatesResult.put(officialCandidates.get(i), districtResult.get(i));
                 }
+            }
+            for (int i = 0; i < officialCandidatesResult.size(); i++) {
+                Fraction candidateResult = Fraction.withNumeratorDenominator(officialCandidatesResult.get(candidates.get(i)), nbValidVotes);
+                results.put(candidates.get(i), String.format(Locale.FRENCH, "%.2f%%", candidateResult.asPercent()));
             }
         } else {
-            Map<String, Integer> officialCandidatesResult = new HashMap<>();
-            for (int i = 0; i < officialCandidates.size(); i++) {
-                officialCandidatesResult.put(candidates.get(i), 0);
-            }
             for (Map.Entry<String, ArrayList<Integer>> entry : votesWithDistricts.entrySet()) {
-                ArrayList<Float> districtResult = new ArrayList<>();
-                ArrayList<Integer> districtVotes = entry.getValue();
-                for (int i = 0; i < districtVotes.size(); i++) {
-                    Fraction candidateResult = Fraction.withNumeratorDenominator(districtVotes.get(i), nbValidVotes);
-                    String candidate = candidates.get(i);
-                    if (officialCandidates.contains(candidate)) {
-                        districtResult.add(candidateResult.asPercent());
-                    } else {
-                        if (candidates.get(i).isEmpty()) {
-                            blankVotes.addToNumerator(districtVotes.get(i));
-                        } else {
-                            nullVotes.addToNumerator(districtVotes.get(i));
-                        }
-                    }
-                }
+                ArrayList<Integer> districtResult = fillVoteBuckets(nullVotes, blankVotes, entry);
+
                 int districtWinnerIndex = 0;
                 for (int i = 1; i < districtResult.size(); i++) {
                     if (districtResult.get(districtWinnerIndex) < districtResult.get(i))
@@ -124,6 +108,24 @@ public class Elections {
         results.put("Abstention", String.format(Locale.FRENCH, "%.2f%%", abstentionResult.asPercent()));
 
         return results;
+    }
+
+    private ArrayList<Integer> fillVoteBuckets(Fraction nullVotes, Fraction blankVotes, Map.Entry<String, ArrayList<Integer>> entry) {
+        ArrayList<Integer> districtResult = new ArrayList<>();
+        ArrayList<Integer> districtVotes = entry.getValue();
+        for (int i = 0; i < districtVotes.size(); i++) {
+            String candidate = candidates.get(i);
+            if (officialCandidates.contains(candidate)) {
+                districtResult.add(districtVotes.get(i));
+            } else {
+                if (candidates.get(i).isEmpty()) {
+                    blankVotes.addToNumerator(districtVotes.get(i));
+                } else {
+                    nullVotes.addToNumerator(districtVotes.get(i));
+                }
+            }
+        }
+        return districtResult;
     }
 
     private int countOfficialCandidateVotes(Map<String, ArrayList<Integer>> entries) {
