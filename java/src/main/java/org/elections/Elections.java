@@ -62,9 +62,10 @@ public class Elections {
 
     public Map<String, String> results() {
         Map<String, String> results = new HashMap<>();
-        Integer nullVotes = 0;
-        Integer blankVotes = 0;
         int nbValidVotes = countOfficialCandidateVotes(withDistrict ? votesWithDistricts:votesWithoutDistrict);
+        int nbVotes = countTotalVotes(withDistrict ? votesWithDistricts:votesWithoutDistrict);
+        Fraction nullVotes = Fraction.withDenominator(nbVotes);
+        Fraction blankVotes = Fraction.withDenominator(nbVotes);
 
         if (!withDistrict) {
             final ArrayList<Integer> votesForNoDistrict = votesWithoutDistrict.get(NO_DISTRICT);
@@ -75,9 +76,9 @@ public class Elections {
                     results.put(candidate, String.format(Locale.FRENCH, "%.2f%%", candidateResult.asPercent()));
                 } else {
                     if (candidates.get(i).isEmpty()) {
-                        blankVotes += votesForNoDistrict.get(i);
+                        blankVotes.addToNumerator(votesForNoDistrict.get(i));
                     } else {
-                        nullVotes += votesForNoDistrict.get(i);
+                        nullVotes.addToNumerator(votesForNoDistrict.get(i));
                     }
                 }
             }
@@ -96,9 +97,9 @@ public class Elections {
                         districtResult.add(candidateResult.asPercent());
                     } else {
                         if (candidates.get(i).isEmpty()) {
-                            blankVotes += districtVotes.get(i);
+                            blankVotes.addToNumerator(districtVotes.get(i));
                         } else {
-                            nullVotes += districtVotes.get(i);
+                            nullVotes.addToNumerator(districtVotes.get(i));
                         }
                     }
                 }
@@ -115,13 +116,8 @@ public class Elections {
             }
         }
 
-        int nbVotes = countTotalVotes(withDistrict ? votesWithDistricts:votesWithoutDistrict);
-
-        Fraction blankResult = Fraction.withNumeratorDenominator(blankVotes, nbVotes);
-        results.put("Blank", String.format(Locale.FRENCH, "%.2f%%", blankResult.asPercent()));
-
-        Fraction nullResult = Fraction.withNumeratorDenominator(nullVotes, nbVotes);
-        results.put("Null", String.format(Locale.FRENCH, "%.2f%%", nullResult.asPercent()));
+        results.put("Blank", String.format(Locale.FRENCH, "%.2f%%", blankVotes.asPercent()));
+        results.put("Null", String.format(Locale.FRENCH, "%.2f%%", nullVotes.asPercent()));
 
         int nbElectors = list.values().stream().map(List::size).reduce(0, Integer::sum);
         Fraction abstentionResult = Fraction.withNumeratorDenominator(nbElectors - nbVotes, nbElectors);
