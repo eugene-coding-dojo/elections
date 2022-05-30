@@ -4,7 +4,7 @@ public class Fraction {
     private int numerator;
     private int denominator;
 
-    public static Fraction withDenominator_(int denominator) {
+    public static Fraction withDenominator(int denominator) {
         return new Fraction().setNumerator_denominator_(0, denominator);
     }
 
@@ -25,5 +25,9 @@ public class Fraction {
             return 0;
         }
         return (float)this.numerator * 100 / this.denominator;
+    }
+
+    public void addToNumerator(Integer amount) {
+        this.numerator += amount;
     }
 }
