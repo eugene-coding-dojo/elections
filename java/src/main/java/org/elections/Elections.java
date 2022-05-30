@@ -63,14 +63,13 @@ public class Elections {
 
     public Map<String, String> results() {
         Map<String, String> results = new HashMap<>();
-        Integer nbVotes = 0;
         Integer nullVotes = 0;
         Integer blankVotes = 0;
         int nbValidVotes = 0;
 
         if (!withDistrict) {
             final ArrayList<Integer> votesForNoDistrict = votesWithoutDistrict.get(NO_DISTRICT);
-            nbVotes = votesForNoDistrict.stream().reduce(0, Integer::sum);
+
             for (int i = 0; i < officialCandidates.size(); i++) {
                 int index = candidates.indexOf(officialCandidates.get(i));
                 nbValidVotes += votesForNoDistrict.get(index);
@@ -90,11 +89,6 @@ public class Elections {
                 }
             }
         } else {
-            for (Map.Entry<String, ArrayList<Integer>> entry : votesWithDistricts.entrySet()) {
-                ArrayList<Integer> districtVotes = entry.getValue();
-                nbVotes += districtVotes.stream().reduce(0, Integer::sum);
-            }
-
             for (int i = 0; i < officialCandidates.size(); i++) {
                 int index = candidates.indexOf(officialCandidates.get(i));
                 for (Map.Entry<String, ArrayList<Integer>> entry : votesWithDistricts.entrySet()) {
@@ -138,6 +132,8 @@ public class Elections {
             }
         }
 
+        int nbVotes = countTotalVotes(withDistrict ? votesWithDistricts:votesWithoutDistrict);
+
         float blankResult = ((float)blankVotes * 100) / nbVotes;
         results.put("Blank", String.format(Locale.FRENCH, "%.2f%%", blankResult));
 
@@ -151,5 +147,13 @@ public class Elections {
         results.put("Abstention", String.format(Locale.FRENCH, "%.2f%%", abstentionResult));
 
         return results;
+    }
+
+    private Integer countTotalVotes(Map<String, ArrayList<Integer>> entries) {
+        int totalVotes = 0;
+        for (Map.Entry<String, ArrayList<Integer>> entry : entries.entrySet()) {
+            totalVotes += entry.getValue().stream().reduce(0, Integer::sum);
+        }
+        return totalVotes;
     }
 }
