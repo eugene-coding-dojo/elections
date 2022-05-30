@@ -65,16 +65,10 @@ public class Elections {
         Map<String, String> results = new HashMap<>();
         Integer nullVotes = 0;
         Integer blankVotes = 0;
-        int nbValidVotes = 0;
+        int nbValidVotes = countOfficialCandidateVotes(withDistrict ? votesWithDistricts:votesWithoutDistrict);
 
         if (!withDistrict) {
             final ArrayList<Integer> votesForNoDistrict = votesWithoutDistrict.get(NO_DISTRICT);
-
-            for (int i = 0; i < officialCandidates.size(); i++) {
-                int index = candidates.indexOf(officialCandidates.get(i));
-                nbValidVotes += votesForNoDistrict.get(index);
-            }
-
             for (int i = 0; i < votesForNoDistrict.size(); i++) {
                 Float candidatResult = ((float) votesForNoDistrict.get(i) * 100) / nbValidVotes;
                 String candidate = candidates.get(i);
@@ -89,14 +83,6 @@ public class Elections {
                 }
             }
         } else {
-            for (int i = 0; i < officialCandidates.size(); i++) {
-                int index = candidates.indexOf(officialCandidates.get(i));
-                for (Map.Entry<String, ArrayList<Integer>> entry : votesWithDistricts.entrySet()) {
-                    ArrayList<Integer> districtVotes = entry.getValue();
-                    nbValidVotes += districtVotes.get(index);
-                }
-            }
-
             Map<String, Integer> officialCandidatesResult = new HashMap<>();
             for (int i = 0; i < officialCandidates.size(); i++) {
                 officialCandidatesResult.put(candidates.get(i), 0);
@@ -147,6 +133,17 @@ public class Elections {
         results.put("Abstention", String.format(Locale.FRENCH, "%.2f%%", abstentionResult));
 
         return results;
+    }
+
+    private int countOfficialCandidateVotes(Map<String, ArrayList<Integer>> entries) {
+        int nbValidVotes = 0;
+        for (int i = 0; i < officialCandidates.size(); i++) {
+            for (Map.Entry<String, ArrayList<Integer>> entry : entries.entrySet()) {
+                ArrayList<Integer> districtVotes = entry.getValue();
+                nbValidVotes += districtVotes.get(i);
+            }
+        }
+        return nbValidVotes;
     }
 
     private Integer countTotalVotes(Map<String, ArrayList<Integer>> entries) {
