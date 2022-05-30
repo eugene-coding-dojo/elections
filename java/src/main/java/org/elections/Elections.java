@@ -1,6 +1,5 @@
 package org.elections;
 
-import java.text.DecimalFormat;
 import java.util.*;
 
 public class Elections {
@@ -70,10 +69,10 @@ public class Elections {
         if (!withDistrict) {
             final ArrayList<Integer> votesForNoDistrict = votesWithoutDistrict.get(NO_DISTRICT);
             for (int i = 0; i < votesForNoDistrict.size(); i++) {
-                Float candidatResult = ((float) votesForNoDistrict.get(i) * 100) / nbValidVotes;
                 String candidate = candidates.get(i);
                 if (officialCandidates.contains(candidate)) {
-                    results.put(candidate, String.format(Locale.FRENCH, "%.2f%%", candidatResult));
+                    Fraction candidateResult = Fraction.withNumeratorDenominator(votesForNoDistrict.get(i), nbValidVotes);
+                    results.put(candidate, String.format(Locale.FRENCH, "%.2f%%", candidateResult.asPercent()));
                 } else {
                     if (candidates.get(i).isEmpty()) {
                         blankVotes += votesForNoDistrict.get(i);
@@ -91,12 +90,10 @@ public class Elections {
                 ArrayList<Float> districtResult = new ArrayList<>();
                 ArrayList<Integer> districtVotes = entry.getValue();
                 for (int i = 0; i < districtVotes.size(); i++) {
-                    float candidateResult = 0;
-                    if (nbValidVotes != 0)
-                        candidateResult = ((float)districtVotes.get(i) * 100) / nbValidVotes;
+                    Fraction candidateResult = Fraction.withNumeratorDenominator(districtVotes.get(i), nbValidVotes);
                     String candidate = candidates.get(i);
                     if (officialCandidates.contains(candidate)) {
-                        districtResult.add(candidateResult);
+                        districtResult.add(candidateResult.asPercent());
                     } else {
                         if (candidates.get(i).isEmpty()) {
                             blankVotes += districtVotes.get(i);
@@ -113,24 +110,22 @@ public class Elections {
                 officialCandidatesResult.put(candidates.get(districtWinnerIndex), officialCandidatesResult.get(candidates.get(districtWinnerIndex)) + 1);
             }
             for (int i = 0; i < officialCandidatesResult.size(); i++) {
-                Float ratioCandidate = ((float) officialCandidatesResult.get(candidates.get(i))) / officialCandidatesResult.size() * 100;
-                results.put(candidates.get(i), String.format(Locale.FRENCH, "%.2f%%", ratioCandidate));
+                Fraction ratio = Fraction.withNumeratorDenominator(officialCandidatesResult.get(candidates.get(i)), officialCandidatesResult.size());
+                results.put(candidates.get(i), String.format(Locale.FRENCH, "%.2f%%", ratio.asPercent()));
             }
         }
 
         int nbVotes = countTotalVotes(withDistrict ? votesWithDistricts:votesWithoutDistrict);
 
-        float blankResult = ((float)blankVotes * 100) / nbVotes;
-        results.put("Blank", String.format(Locale.FRENCH, "%.2f%%", blankResult));
+        Fraction blankResult = Fraction.withNumeratorDenominator(blankVotes, nbVotes);
+        results.put("Blank", String.format(Locale.FRENCH, "%.2f%%", blankResult.asPercent()));
 
-        float nullResult = ((float)nullVotes * 100) / nbVotes;
-        results.put("Null", String.format(Locale.FRENCH, "%.2f%%", nullResult));
+        Fraction nullResult = Fraction.withNumeratorDenominator(nullVotes, nbVotes);
+        results.put("Null", String.format(Locale.FRENCH, "%.2f%%", nullResult.asPercent()));
 
         int nbElectors = list.values().stream().map(List::size).reduce(0, Integer::sum);
-        DecimalFormat df = new DecimalFormat();
-        df.setMaximumFractionDigits(2);
-        float abstentionResult = 100 - ((float) nbVotes * 100 / nbElectors);
-        results.put("Abstention", String.format(Locale.FRENCH, "%.2f%%", abstentionResult));
+        Fraction abstentionResult = Fraction.withNumeratorDenominator(nbElectors - nbVotes, nbElectors);
+        results.put("Abstention", String.format(Locale.FRENCH, "%.2f%%", abstentionResult.asPercent()));
 
         return results;
     }
