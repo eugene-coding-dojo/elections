@@ -4,7 +4,7 @@ public class Fraction {
     private final long numerator;
     private final long denominator;
 
-    public static Fraction withNumeratorDenominator(long numerator, int denominator) {
+    public static Fraction withNumeratorDenominator(long numerator, long denominator) {
         return new Fraction(numerator, denominator);
     }
 

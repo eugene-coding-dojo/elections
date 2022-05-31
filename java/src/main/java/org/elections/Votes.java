@@ -26,4 +26,12 @@ public class Votes {
     private Stream<Vote> errorVotesStream() {
         return votes.stream().filter(Vote::isForUnofficialCandidate);
     }
+
+    public long countValid() {
+        return votes.size() - errorVotesStream().count();
+    }
+
+    public long countAllVotes() {
+        return votes.size();
+    }
 }
