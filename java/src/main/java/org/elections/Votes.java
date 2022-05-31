@@ -40,8 +40,24 @@ public class Votes {
     }
 
     public Map<String, Long> resultForNoDistrict() {
+        return votesForOfficialCandidates().collect(groupingBy(Vote::candidateName, counting()));
+    }
+
+    private Stream<Vote> votesForOfficialCandidates() {
         return votes.stream()
-                .filter(Vote::isForOfficialCandidate)
+                .filter(Vote::isForOfficialCandidate);
+    }
+
+    public String districtWinner(String districtName) {
+        return resultForDistrict(districtName).entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+    }
+
+    private Map<String, Long> resultForDistrict(String districtName) {
+        return votesForOfficialCandidates()
+                .filter(vote -> vote.isForDistrict(districtName))
                 .collect(groupingBy(Vote::candidateName, counting()));
     }
 }
