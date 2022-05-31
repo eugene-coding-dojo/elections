@@ -1,6 +1,10 @@
 package org.elections;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class Elections {
     Map<String, ArrayList<Integer>> votesWithDistricts;
@@ -83,14 +87,7 @@ public class Elections {
             }
         } else {
             for (Map.Entry<String, ArrayList<Integer>> entry : votesWithDistricts.entrySet()) {
-                ArrayList<Integer> districtResult = fillVoteBuckets(entry);
-
-                int districtWinnerIndex = 0;
-                for (int i = 1; i < districtResult.size(); i++) {
-                    if (districtResult.get(districtWinnerIndex) < districtResult.get(i))
-                        districtWinnerIndex = i;
-                }
-                final String districtWinner = candidates.get(districtWinnerIndex);
+                String districtWinner = votes.districtWinner(entry.getKey());
                 officialCandidatesResult.put(districtWinner, officialCandidatesResult.get(districtWinner) + 1);
             }
             for (int i = 0; i < officialCandidatesResult.size(); i++) {
@@ -111,16 +108,4 @@ public class Elections {
 
         return results;
     }
-
-    private ArrayList<Integer> fillVoteBuckets(Map.Entry<String, ArrayList<Integer>> entry) {
-        ArrayList<Integer> districtResult = new ArrayList<>();
-        ArrayList<Integer> districtVotes = entry.getValue();
-        for (int i = 0; i < districtVotes.size(); i++) {
-            if (candidates.isOfficial(candidates.get(i))) {
-                districtResult.add(districtVotes.get(i));
-            }
-        }
-        return districtResult;
-    }
-
 }
