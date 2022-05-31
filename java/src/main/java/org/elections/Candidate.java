@@ -24,4 +24,12 @@ public class Candidate {
     public boolean isOfficial() {
         return this.isOfficial;
     }
+
+    public boolean hasName(String candidateName) {
+        return this.name.equals(candidateName);
+    }
+
+    public boolean isBlank() {
+        return this.name.trim().isEmpty();
+    }
 }
