@@ -7,11 +7,11 @@ import java.util.Locale;
 import java.util.Map;
 
 public class Elections {
-    Map<String, ArrayList<Integer>> votesWithDistricts;
     private final Electors electors;
     private final Candidates candidates;
     private final Votes votes;
     private boolean withDistrict;
+    private final List<String> districts = new ArrayList<>();
 
     public Elections(Map<String, List<String>> list, boolean withDistrict) {
         electors = Electors.fromMapByDistrict(list);
@@ -20,49 +20,23 @@ public class Elections {
 
         this.withDistrict = withDistrict;
 
-        votesWithDistricts = new HashMap<>();
-        votesWithDistricts.put("District 1", new ArrayList<>());
-        votesWithDistricts.put("District 2", new ArrayList<>());
-        votesWithDistricts.put("District 3", new ArrayList<>());
+        districts.add("District 1");
+        districts.add("District 2");
+        districts.add("District 3");
     }
 
     public void addOfficialCandidate(String candidate) {
         candidates.addOfficial(candidate);
-
-        votesWithDistricts.get("District 1").add(0);
-        votesWithDistricts.get("District 2").add(0);
-        votesWithDistricts.get("District 3").add(0);
     }
 
     public void voteFor(String electorName, String candidateName, String electorDistrict) {
-        if (!withDistrict) {
-            if (candidates.isUnregistered(candidateName)) {
-                candidates.addUnofficial(candidateName);
-            }
-            //countVote(candidateName, votesWithoutDistrict, NO_DISTRICT);
-        } else if (votesWithDistricts.containsKey(electorDistrict)) {
-            countVote(candidateName, votesWithDistricts, electorDistrict);
+        if (candidates.isUnregistered(candidateName)) {
+            candidates.addUnofficial(candidateName);
         }
+
         votes.registerVote(electorDistrict,
                 electors.findByName(electorName),
                 candidates.findByName(candidateName));
-    }
-
-    private void countVote(String candidate, Map<String, ArrayList<Integer>> votesMap, String districtName) {
-        if (candidates.isUnregistered(candidate)) {
-            addUnofficialCandidate(candidate, votesMap);
-        }
-        incrementCandidateVotesCounter(candidate, candidates, votesMap.get(districtName));
-    }
-
-    private void addUnofficialCandidate(String candidate, Map<String, ArrayList<Integer>> votesMap) {
-        candidates.addUnofficial(candidate);
-        votesMap.forEach((district, votes) -> votes.add(0));
-    }
-
-    private void incrementCandidateVotesCounter(String candidate, Candidates candidates, ArrayList<Integer> votesByCandidate) {
-        int index = candidates.indexOf(candidate);
-        votesByCandidate.set(index, votesByCandidate.get(index) + 1);
     }
 
     public Map<String, String> results() {
@@ -86,8 +60,8 @@ public class Elections {
                 results.put(candidates.get(i), String.format(Locale.FRENCH, "%.2f%%", candidateResult.asPercent()));
             }
         } else {
-            for (Map.Entry<String, ArrayList<Integer>> entry : votesWithDistricts.entrySet()) {
-                String districtWinner = votes.districtWinner(entry.getKey());
+            for (String district : districts) {
+                String districtWinner = votes.districtWinner(district);
                 officialCandidatesResult.put(districtWinner, officialCandidatesResult.get(districtWinner) + 1);
             }
             for (int i = 0; i < officialCandidatesResult.size(); i++) {
