@@ -3,8 +3,6 @@ package org.elections;
 import java.util.*;
 
 public class Elections {
-    private static final String NO_DISTRICT = "No district";
-    Map<String, ArrayList<Integer>> votesWithoutDistrict;
     Map<String, ArrayList<Integer>> votesWithDistricts;
     private final Electors electors;
     private final Candidates candidates;
@@ -18,9 +16,6 @@ public class Elections {
 
         this.withDistrict = withDistrict;
 
-        votesWithoutDistrict = new HashMap<>();
-        votesWithoutDistrict.put(NO_DISTRICT, new ArrayList<>());
-
         votesWithDistricts = new HashMap<>();
         votesWithDistricts.put("District 1", new ArrayList<>());
         votesWithDistricts.put("District 2", new ArrayList<>());
@@ -30,8 +25,6 @@ public class Elections {
     public void addOfficialCandidate(String candidate) {
         candidates.addOfficial(candidate);
 
-        votesWithoutDistrict.get(NO_DISTRICT).add(0);
-
         votesWithDistricts.get("District 1").add(0);
         votesWithDistricts.get("District 2").add(0);
         votesWithDistricts.get("District 3").add(0);
@@ -39,7 +32,10 @@ public class Elections {
 
     public void voteFor(String electorName, String candidateName, String electorDistrict) {
         if (!withDistrict) {
-            countVote(candidateName, votesWithoutDistrict, NO_DISTRICT);
+            if (candidates.isUnregistered(candidateName)) {
+                candidates.addUnofficial(candidateName);
+            }
+            //countVote(candidateName, votesWithoutDistrict, NO_DISTRICT);
         } else if (votesWithDistricts.containsKey(electorDistrict)) {
             countVote(candidateName, votesWithDistricts, electorDistrict);
         }
@@ -70,17 +66,16 @@ public class Elections {
         long nbValidVotes = votes.countValid();
         long nbVotes = votes.countAllVotes();
 
-        Map<String, Integer> officialCandidatesResult = new HashMap<>();
+        Map<String, Long> officialCandidatesResult = new HashMap<>();
         for (int i = 0; i < candidates.officialCandidatesCount(); i++) {
-            officialCandidatesResult.put(candidates.get(i), 0);
+            officialCandidatesResult.put(candidates.get(i), 0L);
         }
         if (!withDistrict) {
-            for (Map.Entry<String, ArrayList<Integer>> entry : votesWithoutDistrict.entrySet()) {
-                ArrayList<Integer> districtResult = fillVoteBuckets(entry);
+            Map<String, Long> districtResultByCandidate = votes.resultForNoDistrict();
 
-                for (int i = 0; i < candidates.officialCandidatesCount(); i++) {
-                    officialCandidatesResult.put(candidates.get(i), districtResult.get(i));
-                }
+            for (int i = 0; i < candidates.officialCandidatesCount(); i++) {
+                final String candidateName = candidates.get(i);
+                officialCandidatesResult.put(candidateName, districtResultByCandidate.getOrDefault(candidateName, 0L));
             }
             for (int i = 0; i < officialCandidatesResult.size(); i++) {
                 Fraction candidateResult = Fraction.withNumeratorDenominator(officialCandidatesResult.get(candidates.get(i)), nbValidVotes);
