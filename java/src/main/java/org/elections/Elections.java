@@ -67,8 +67,8 @@ public class Elections {
 
     public Map<String, String> results() {
         Map<String, String> results = new HashMap<>();
-        int nbValidVotes = countOfficialCandidateVotes(withDistrict ? votesWithDistricts:votesWithoutDistrict);
-        int nbVotes = countTotalVotes(withDistrict ? votesWithDistricts:votesWithoutDistrict);
+        long nbValidVotes = votes.countValid();
+        long nbVotes = votes.countAllVotes();
 
         Map<String, Integer> officialCandidatesResult = new HashMap<>();
         for (int i = 0; i < candidates.officialCandidatesCount(); i++) {
@@ -128,22 +128,4 @@ public class Elections {
         return districtResult;
     }
 
-    private int countOfficialCandidateVotes(Map<String, ArrayList<Integer>> entries) {
-        int nbValidVotes = 0;
-        for (int i = 0; i < candidates.officialCandidatesCount(); i++) {
-            for (Map.Entry<String, ArrayList<Integer>> entry : entries.entrySet()) {
-                ArrayList<Integer> districtVotes = entry.getValue();
-                nbValidVotes += districtVotes.get(i);
-            }
-        }
-        return nbValidVotes;
-    }
-
-    private Integer countTotalVotes(Map<String, ArrayList<Integer>> entries) {
-        int totalVotes = 0;
-        for (Map.Entry<String, ArrayList<Integer>> entry : entries.entrySet()) {
-            totalVotes += entry.getValue().stream().reduce(0, Integer::sum);
-        }
-        return totalVotes;
-    }
 }
