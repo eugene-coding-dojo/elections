@@ -2,7 +2,11 @@ package org.elections;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
 
 public class Votes {
     private final List<Vote> votes;
@@ -33,5 +37,11 @@ public class Votes {
 
     public long countAllVotes() {
         return votes.size();
+    }
+
+    public Map<String, Long> resultForNoDistrict() {
+        return votes.stream()
+                .filter(Vote::isForOfficialCandidate)
+                .collect(groupingBy(Vote::candidateName, counting()));
     }
 }

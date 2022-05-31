@@ -22,4 +22,16 @@ public class Vote {
     public boolean isForUnofficialCandidate() {
         return !this.candidate.isOfficial();
     }
+
+    public boolean isForOfficialCandidate() {
+        return this.candidate.isOfficial();
+    }
+
+    public boolean isForDistrict(String district) {
+        return this.district.equals(district);
+    }
+
+    public String candidateName(){
+        return this.candidate.name();
+    }
 }
