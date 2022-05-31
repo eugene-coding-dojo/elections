@@ -4,16 +4,15 @@ import java.util.*;
 
 public class Elections {
     private static final String NO_DISTRICT = "No district";
-    List<String> candidates = new ArrayList<>();
     Map<String, ArrayList<Integer>> votesWithoutDistrict;
     Map<String, ArrayList<Integer>> votesWithDistricts;
     private final Electors electors;
-    private final Candidates candidatesEntity;
+    private final Candidates candidates;
     private boolean withDistrict;
 
     public Elections(Map<String, List<String>> list, boolean withDistrict) {
         electors = Electors.fromMapByDistrict(list);
-        candidatesEntity = new Candidates();
+        candidates = new Candidates();
 
         this.withDistrict = withDistrict;
 
@@ -27,8 +26,7 @@ public class Elections {
     }
 
     public void addOfficialCandidate(String candidate) {
-        candidates.add(candidate);
-        candidatesEntity.addOfficial(candidate);
+        candidates.addOfficial(candidate);
 
         votesWithoutDistrict.get(NO_DISTRICT).add(0);
 
@@ -46,15 +44,14 @@ public class Elections {
     }
 
     private void countVote(String candidate, Map<String, ArrayList<Integer>> votesMap, String districtName) {
-        if (!candidates.contains(candidate)) {
+        if (candidates.isUnregistered(candidate)) {
             addUnofficialCandidate(candidate, votesMap);
         }
-        incrementCandidateVotesCounter(candidate, candidatesEntity, votesMap.get(districtName));
+        incrementCandidateVotesCounter(candidate, candidates, votesMap.get(districtName));
     }
 
     private void addUnofficialCandidate(String candidate, Map<String, ArrayList<Integer>> votesMap) {
-        candidates.add(candidate);
-        candidatesEntity.addUnofficial(candidate);
+        candidates.addUnofficial(candidate);
         votesMap.forEach((district, votes) -> votes.add(0));
     }
 
@@ -70,17 +67,15 @@ public class Elections {
         Fraction nullVotes = Fraction.withDenominator(nbVotes);
         Fraction blankVotes = Fraction.withDenominator(nbVotes);
 
-        List<String> offCand = candidatesEntity.officialCandidates();
-        candidatesEntity.officialCandidatesCount();
         Map<String, Integer> officialCandidatesResult = new HashMap<>();
-        for (int i = 0; i < candidatesEntity.officialCandidatesCount(); i++) {
+        for (int i = 0; i < candidates.officialCandidatesCount(); i++) {
             officialCandidatesResult.put(candidates.get(i), 0);
         }
         if (!withDistrict) {
             for (Map.Entry<String, ArrayList<Integer>> entry : votesWithoutDistrict.entrySet()) {
                 ArrayList<Integer> districtResult = fillVoteBuckets(nullVotes, blankVotes, entry);
 
-                for (int i = 0; i < candidatesEntity.officialCandidatesCount(); i++) {
+                for (int i = 0; i < candidates.officialCandidatesCount(); i++) {
                     officialCandidatesResult.put(candidates.get(i), districtResult.get(i));
                 }
             }
@@ -97,7 +92,8 @@ public class Elections {
                     if (districtResult.get(districtWinnerIndex) < districtResult.get(i))
                         districtWinnerIndex = i;
                 }
-                officialCandidatesResult.put(candidates.get(districtWinnerIndex), officialCandidatesResult.get(candidates.get(districtWinnerIndex)) + 1);
+                final String districtWinner = candidates.get(districtWinnerIndex);
+                officialCandidatesResult.put(districtWinner, officialCandidatesResult.get(districtWinner) + 1);
             }
             for (int i = 0; i < officialCandidatesResult.size(); i++) {
                 Fraction ratio = Fraction.withNumeratorDenominator(officialCandidatesResult.get(candidates.get(i)), officialCandidatesResult.size());
@@ -120,10 +116,10 @@ public class Elections {
         ArrayList<Integer> districtVotes = entry.getValue();
         for (int i = 0; i < districtVotes.size(); i++) {
             String candidate = candidates.get(i);
-            if (candidatesEntity.isOfficial(candidate)) {
+            if (candidates.isOfficial(candidate)) {
                 districtResult.add(districtVotes.get(i));
             } else {
-                if (candidates.get(i).isEmpty()) {
+                if (candidate.isEmpty()) {
                     blankVotes.addToNumerator(districtVotes.get(i));
                 } else {
                     nullVotes.addToNumerator(districtVotes.get(i));
@@ -135,7 +131,7 @@ public class Elections {
 
     private int countOfficialCandidateVotes(Map<String, ArrayList<Integer>> entries) {
         int nbValidVotes = 0;
-        for (int i = 0; i < candidatesEntity.officialCandidatesCount(); i++) {
+        for (int i = 0; i < candidates.officialCandidatesCount(); i++) {
             for (Map.Entry<String, ArrayList<Integer>> entry : entries.entrySet()) {
                 ArrayList<Integer> districtVotes = entry.getValue();
                 nbValidVotes += districtVotes.get(i);

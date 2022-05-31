@@ -2,6 +2,7 @@ package org.elections;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Candidates {
@@ -36,6 +37,18 @@ public class Candidates {
     }
 
     public boolean isOfficial(String candidate) {
-        return candidates.stream().filter(c -> candidate.equals(c.name())).anyMatch(Candidate::isOfficial);
+        return candidates.stream().filter(sameNameAs(candidate)).anyMatch(Candidate::isOfficial);
+    }
+
+    public boolean isUnregistered(String candidate) {
+        return candidates.stream().noneMatch(sameNameAs(candidate));
+    }
+
+    private Predicate<Candidate> sameNameAs(String candidate) {
+        return c -> candidate.equals(c.name());
+    }
+
+    public String get(int index) {
+        return candidates.get(index).name();
     }
 }
