@@ -13,4 +13,8 @@ public class Elector {
         this.name = name;
         return this;
     }
+
+    public boolean hasName(String electorName) {
+        return this.name.equals(electorName);
+    }
 }

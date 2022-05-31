@@ -51,4 +51,11 @@ public class Candidates {
     public String get(int index) {
         return candidates.get(index).name();
     }
+
+    public Candidate findByName(String candidateName) {
+        return candidates.stream()
+                .filter(candidate -> candidate.hasName(candidateName))
+                .findFirst()
+                .orElse(null);
+    }
 }

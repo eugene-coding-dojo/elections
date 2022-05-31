@@ -3,6 +3,7 @@ package org.elections;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Electors {
@@ -28,5 +29,12 @@ public class Electors {
 
     public int size() {
         return electors.size();
+    }
+
+    public Elector findByName(String electorName) {
+        return electors.stream()
+                .filter(elector -> elector.hasName(electorName))
+                .findAny()
+                .orElse(null);
     }
 }
