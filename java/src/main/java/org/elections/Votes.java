@@ -44,8 +44,7 @@ public class Votes {
     }
 
     private Stream<Vote> votesForOfficialCandidates() {
-        return votes.stream()
-                .filter(Vote::isForOfficialCandidate);
+        return votes.stream().filter(Vote::isForOfficialCandidate);
     }
 
     public String districtWinner(String districtName) {
