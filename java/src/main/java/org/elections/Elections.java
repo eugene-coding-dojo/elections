@@ -40,46 +40,37 @@ public class Elections {
     }
 
     public Map<String, String> results() {
-        Map<String, String> results = new HashMap<>();
+        FormattedResult formattedResult = new FormattedResult(Locale.FRENCH, "%.2f%%");
         long nbValidVotes = votes.countValid();
         long nbVotes = votes.countAllVotes();
 
-        Map<String, Long> officialCandidatesResult = new HashMap<>();
-        for (int i = 0; i < candidates.officialCandidatesCount(); i++) {
-            officialCandidatesResult.put(candidates.get(i), 0L);
-        }
         if (!withDistrict) {
             Map<String, Long> districtResultByCandidate = votes.resultForNoDistrict();
 
-            for (int i = 0; i < candidates.officialCandidatesCount(); i++) {
-                final String candidateName = candidates.get(i);
-                officialCandidatesResult.put(candidateName, districtResultByCandidate.getOrDefault(candidateName, 0L));
+            for (String candidate : candidates.officialCandidates()) {
+                Fraction candidateResult = Fraction.withNumeratorDenominator(districtResultByCandidate.getOrDefault(candidate,0L), nbValidVotes);
+                formattedResult.addCandidateResult(candidate, candidateResult);
             }
-            for (int i = 0; i < officialCandidatesResult.size(); i++) {
-                Fraction candidateResult = Fraction.withNumeratorDenominator(officialCandidatesResult.get(candidates.get(i)), nbValidVotes);
-                results.put(candidates.get(i), String.format(Locale.FRENCH, "%.2f%%", candidateResult.asPercent()));
-            }
+
         } else {
+            Map<String, Long> officialCandidatesResult = new HashMap<>();
+            for (int i = 0; i < candidates.officialCandidatesCount(); i++) {
+                officialCandidatesResult.put(candidates.get(i), 0L);
+            }
             for (String district : districts) {
                 String districtWinner = votes.districtWinner(district);
                 officialCandidatesResult.put(districtWinner, officialCandidatesResult.get(districtWinner) + 1);
             }
-            for (int i = 0; i < officialCandidatesResult.size(); i++) {
-                Fraction ratio = Fraction.withNumeratorDenominator(officialCandidatesResult.get(candidates.get(i)), officialCandidatesResult.size());
-                results.put(candidates.get(i), String.format(Locale.FRENCH, "%.2f%%", ratio.asPercent()));
+            for (String candidate : candidates.officialCandidates()) {
+                Fraction ratio = Fraction.withNumeratorDenominator(officialCandidatesResult.getOrDefault(candidate, 0L), districts.size());
+                formattedResult.addCandidateResult(candidate, ratio);
             }
         }
 
-        Fraction blanks = Fraction.withNumeratorDenominator(votes.countBlanks(), nbVotes);
-        results.put("Blank", String.format(Locale.FRENCH, "%.2f%%", blanks.asPercent()));
+        formattedResult.addBlankVotes(Fraction.withNumeratorDenominator(votes.countBlanks(), nbVotes));
+        formattedResult.addNullVotes(Fraction.withNumeratorDenominator(votes.countNulls(), nbVotes));
+        formattedResult.addAbstention(Fraction.withNumeratorDenominator(electors.size() - nbVotes, electors.size()));
 
-        Fraction nulls = Fraction.withNumeratorDenominator(votes.countNulls(), nbVotes);
-        results.put("Null", String.format(Locale.FRENCH, "%.2f%%", nulls.asPercent()));
-
-        int nbElectors = electors.size();
-        Fraction abstentionResult = Fraction.withNumeratorDenominator(nbElectors - nbVotes, nbElectors);
-        results.put("Abstention", String.format(Locale.FRENCH, "%.2f%%", abstentionResult.asPercent()));
-
-        return results;
+        return formattedResult.result();
     }
 }
