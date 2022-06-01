@@ -14,9 +14,9 @@ public class Fraction {
     }
 
     public float asPercent() {
-        if (this.denominator == 0) {
+        if (this.denominator==0) {
             return 0;
         }
-        return (float)this.numerator * 100 / this.denominator;
+        return (float) this.numerator * 100 / this.denominator;
     }
 }
