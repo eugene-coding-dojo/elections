@@ -31,7 +31,7 @@ public class Vote {
         return this.district.equals(district);
     }
 
-    public String candidateName(){
+    public String candidateName() {
         return this.candidate.name();
     }
 }

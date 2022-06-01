@@ -14,8 +14,7 @@ public abstract class VotingResultStrategy {
     }
 
     public void printOn(FormattedResult formattedResult) {
-        Fraction zero = Fraction.withNumeratorDenominator(0L,1L);
-        long nbValidVotes = votes.countValid();
+        Fraction zero = Fraction.withNumeratorDenominator(0L, 1L);
         long nbVotes = votes.countAllVotes();
 
         for (String candidate : candidates.officialCandidates()) {

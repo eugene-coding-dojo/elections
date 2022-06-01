@@ -16,15 +16,6 @@ public class Candidates {
         candidates.add(Candidate.unofficial(name));
     }
 
-    public int indexOf(String candidate) {
-        for (int i = 0; i < candidates.size(); i++) {
-            if (candidate.equals(candidates.get(i).name())) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     public List<String> officialCandidates() {
         return candidates.stream()
                 .filter(Candidate::isOfficial)
@@ -34,10 +25,6 @@ public class Candidates {
 
     public long officialCandidatesCount() {
         return candidates.stream().filter(Candidate::isOfficial).count();
-    }
-
-    public boolean isOfficial(String candidate) {
-        return candidates.stream().filter(sameNameAs(candidate)).anyMatch(Candidate::isOfficial);
     }
 
     public boolean isUnregistered(String candidate) {
@@ -55,7 +42,6 @@ public class Candidates {
     public Candidate findByName(String candidateName) {
         return candidates.stream()
                 .filter(candidate -> candidate.hasName(candidateName))
-                .findFirst()
-                .orElse(null);
+                .findFirst().orElse(null);
     }
 }

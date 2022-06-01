@@ -3,7 +3,6 @@ package org.elections;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Electors {
@@ -15,7 +14,7 @@ public class Electors {
 
     public static Electors fromMapByDistrict(Map<String, List<String>> electorsByDistrict) {
         Electors instance = new Electors();
-        for(Map.Entry<String, List<String>> district : electorsByDistrict.entrySet()) {
+        for (Map.Entry<String, List<String>> district : electorsByDistrict.entrySet()) {
             instance.addAll(district.getValue().stream()
                     .map(el -> Elector.withDistrict_Name_(district.getKey(), el))
                     .collect(Collectors.toList()));
